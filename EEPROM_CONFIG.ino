@@ -11,6 +11,7 @@ uint8_t ip_oct1;
 uint8_t ip_oct2;
 uint8_t ip_oct3;
 uint8_t ip_oct4;
+uint8_t wifi;
 
 // Alamat dari tiap-tiap konstanta yang disimpan di EEPROM
 #define VOLUME_ADDR 0 //0-7
@@ -19,6 +20,7 @@ uint8_t ip_oct4;
 #define IP_OCT2_ADDR 24 //
 #define IP_OCT3_ADDR 32 //
 #define IP_OCT4_ADDR 40 //
+#define WIFI_ADDR 48 //
 
 void EEPROM_init(){
   if (!EEPROM.begin(1000)) {
