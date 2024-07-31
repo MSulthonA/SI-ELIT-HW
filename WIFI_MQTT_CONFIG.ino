@@ -1,15 +1,9 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <WiFiMulti.h>
-//#include <ESP8266WiFi.h>
 
 //const char* ssid = "oo";
 //const char* password = "12345678";
-
-//const char* ssid = "A7";
-//const char* password = "12345678";
-
-const char* Topic = "PegonBacaanP";
 
 //const char* mqtt_server = "192.168.214.235";
 
@@ -20,50 +14,60 @@ WiFiMulti wifiMulti;
 void MQTT_init() 
 {
   Serial.println();
+//  EEPROM.writeByte(IP_OCT1_ADDR, 0);
+//  EEPROM.commit();
+//  for(int i=0; i < len; i+=2){
+//    wifiMulti.addAP(credential[get_ip(1)], credential[get_ip(1)+1]);
+//  }
+  vTaskDelay(500);
+  wifiMulti.addAP(credential[get_ip(1)], credential[get_ip(1)+1]);
+  Serial.print("NOMOR WIFI : ");
+  Serial.println(get_ip(1));
 
-  wifiMulti.addAP("PPMBKI ASTRA 1", "bki12345678");
-  wifiMulti.addAP("PPMBKI ASTRA 2", "calonmenantuidaman");
-  wifiMulti.addAP("PPMBKI ASTRI 3", "");
-//  wifiMulti.addAP("PPMBKI ASTRA 3", "1sampai9");
-  wifiMulti.addAP("PPMBKI ASTRI 1", "istrisolekha");
-//  wifiMulti.addAP("PPMBKI ASTRI 2", "istrisolekha");
+//  wifiMulti.addAP("PPMBKI ASTRA 1", "bki12345678");
+//  wifiMulti.addAP("PPMBKI ASTRA 2", "calonmenantuidaman");
+//  wifiMulti.addAP("PPMBKI ASTRI 3", "");
+////  wifiMulti.addAP("PPMBKI ASTRA 3", "1sampai9");
+//  wifiMulti.addAP("PPMBKI ASTRI 1", "istrisolekha");
+////  wifiMulti.addAP("PPMBKI ASTRI 2", "istrisolekha");
   wifiMulti.addAP("SAS", "123456789");
   
   // Menyambungkan ke WiFi
 //  WiFi.mode(WIFI_STA); //esp8266
 //  WiFi.begin(ssid, password);
-
-
-
 //  uint32_t start_time = millis();
   wifiMulti.run();
-  if(WiFi.status() != WL_CONNECTED){
-    delay(500);
-    Serial.print(".");
-//    if((millis()-start_time) >= 15000) ESP.restart();
-  }
-//  Serial.println();
+//  delay(500);
+//  if(WiFi.status() != WL_CONNECTED){
+//    delay(500);
+//    Serial.print(".");
+////    if((millis()-start_time) >= 15000) ESP.restart();
+//  }
+//  
 //  Serial.println("WiFi connected");
 //  Serial.println("IP address : ");
 //  Serial.println(WiFi.localIP());
-//  Serial.println(WiFi.SSID());
+  Serial.print("MAC Address : ");
+  Serial.println(WiFi.macAddress());
+  Serial.print("SSID : ");
+  Serial.println(WiFi.SSID());
 //  LED_WifiConnect();
-//
+
   call_MQTT();
 }
 
 void call_MQTT(){
-  String mqtt_server;
-  mqtt_server = "" + (String)get_ip(1)+'.'+ (String)get_ip(2)+'.'+ (String)get_ip(3)+'.'+ (String)get_ip(4);
-//  mqtt_server = "192.168.214.235";
-  Serial.println(mqtt_server);
-//  char* mqtt = mqtt_server.c_str();
-  int length = mqtt_server.length();
-  char* mqtt = new char[length+1];
-  strcpy(mqtt, mqtt_server.c_str());
-  Serial.println(mqtt);
+//  String mqtt_server;
+//  mqtt_server = "" + (String)get_ip(1)+'.'+ (String)get_ip(2)+'.'+ (String)get_ip(3)+'.'+ (String)get_ip(4);
+  //  mqtt_server = "192.168.214.235";
+//  Serial.println(mqtt_server);
+  //  char* mqtt = mqtt_server.c_str();
+//  int length = mqtt_server.length();
+//  char* mqtt = new char[length+1];
+//  strcpy(mqtt, mqtt_server.c_str());
+//  Serial.println(mqtt);
     // Menge-set Server MQTT dan portnya dan fungsi callback 
-  client.setServer(mqtt, 1883);
+  client.setServer("test.mosquitto.org", 1883);
   client.setCallback(callback);
   delay(200);
 }
@@ -74,7 +78,6 @@ void MQTT_config()
   if(!client.connected()){
 //    int element = 1;
 //    xQueueSend(queue, &element, portMAX_DELAY);
-//    Serial.println("Ngirim 1");
 //  LCD_Reconnect();
     isConnect = false;
     MQTT_reconnect();
@@ -93,6 +96,8 @@ void MQTT_publish(String datas){
   strMSG.toCharArray(chrMSG, sizeof(chrMSG));
 //  delay(2000);
   client.publish(Topic, chrMSG);
+//  start_req = millis();
+//  getTest();
 
   //jika gagal saja
 //  if(gagal){
@@ -111,7 +116,7 @@ void MQTT_publish(String datas){
 // length berupa jumlah atau panjang dari bytearray
 void callback(char* topic, byte* message, unsigned int length){
   String messageTemp;
-  char token[40];
+  char token[45];
   memset(token, '\0', sizeof(token));
   for(int i=0; i < length; i++){
     messageTemp += (char)message[i];
@@ -129,6 +134,8 @@ void callback(char* topic, byte* message, unsigned int length){
     strcpy(token,messageTemp.c_str());
     // do something
     if(strcmp(strtok((char*)message,","),"res_att")==0){
+//    Serial.print("Waktu Respon : ");
+//    Serial.println(millis()-start_req);
       BUZZER_successfull();
       qStatus = xQueueSend(queue, &messageTemp, 0);//portMAX_DELAY
       vTaskDelay(2250);
@@ -138,6 +145,7 @@ void callback(char* topic, byte* message, unsigned int length){
 //      Serial.println(token);
 //      memset(message, '\0', sizeof(message));
     }
+//    getTest();
   }
 //  if(String(topic) == "WillMSG") {
 //    Serial.print("WillMSG : ");
@@ -154,14 +162,18 @@ void MQTT_reconnect(){
     if(WiFi.status()!=WL_CONNECTED){
       uint32_t start_time = millis();
       LED_WifiDisconnect();
-//      WiFi.begin(ssid, password);
+////      WiFi.begin(ssid, password);
+      Serial.println("Connecting to wifi : ");
       while(WiFi.status()!=WL_CONNECTED){
         wifiMulti.run();
         delay(500);
-        Serial.print("connect wifi...");
-        if((millis()-start_time) >= 20000) ESP.restart();
+        Serial.print(".");
+        if((millis()-start_time) >= 15000) ESP.restart();
       }
     }
+//    Serial.print("Waktu Konek : ");
+//    Serial.print(millis()-start_mil);
+//    Serial.println("mili sekon");
     LED_WifiConnect();
     
     //Connect Server
@@ -169,11 +181,8 @@ void MQTT_reconnect(){
     String client_id = "esp32-client-";
     client_id += String(WiFi.macAddress());
     Serial.println(WiFi.macAddress());
-
-//    String client_id= "ESP32Client-";
-//    client_id += String(random(0xffff), HEX);
       
-    if(client.connect("ESP8266Client2",NULL,NULL,Topic, 1, 1,"disconnect")){ // client_id.c_str() //ESP8266Client
+    if(client.connect(namaPerangkat,NULL,NULL,Topic, 1, 1,"disconnect")){ // client_id.c_str() //ESP8266Client
       Serial.println("connected");
       BUZZER_beep();
 //      LCD_wait();
