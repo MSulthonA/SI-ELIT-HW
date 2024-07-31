@@ -144,7 +144,7 @@ void LCD_process(String datas){
     LCD_wait();
 }
 
-void LCD_reqmsg(char datas[40]){
+void LCD_reqmsg(char datas[45]){
   if (xSemaphoreTake (xMutex, portMAX_DELAY)) {
   display.stopscroll();
   display.clearDisplay();
@@ -334,11 +334,11 @@ void MENU_CONFIG(){
       break;
     case SET_SERVER:
       if(prev!=gcounter){
-        max_count = 5;
+        max_count = 2;
         if(ip_switch){
           Serial.print("IP_SWITCH : ");
           Serial.println(ip_switch);
-          LCD_CONFIG_MODE2(selected_ip ,get_eeprom(selected_ip+2));
+          LCD_CONFIG_MODE2(selected_ip ,get_eeprom(2));
         }else{
           LCD_CONFIG_MODE2(gcounter,0);
 //          selected_ip = gcounter;
@@ -405,7 +405,7 @@ uint8_t LCD_CONFIG_MODE(uint8_t SELECTED){
   display.setCursor(5, 17);
   display.println("[1] Status");
   display.setCursor(5, 26);
-  display.println("[2] IP SERVER");
+  display.println("[2] WIFI");
   display.setCursor(5, 35);
   display.println("[3] Volume");
   display.setCursor(5, 44);
@@ -421,7 +421,7 @@ uint8_t LCD_CONFIG_MODE(uint8_t SELECTED){
     case SET_SERVER:
       display.setTextColor(BLACK, WHITE);
       display.setCursor(5, 26);
-      display.println("[2] IP Server");
+      display.println("[2] WIFI");
       break;
     case SET_VOLUME:
       display.setTextColor(BLACK, WHITE);
@@ -460,10 +460,13 @@ void LCD_CONFIG_MODE1(){
   display.setCursor(2, 17);
   display.print("Wifi : ");
   display.println(getSsid());
-  display.setCursor(2, 26);
-  display.println("ID_Device : 01");
-  display.setCursor(2,35);
-  display.println(get_Battery());
+  display.setCursor(2, 29);
+  display.print("ID_Device : ");
+  display.println(namaPerangkat);
+  display.setCursor(2,41);
+//  display.print("Baterai : 87.20");
+  display.print(get_Battery()/4.2*100);
+  display.println("%");
   display.setTextColor(BLACK, WHITE);
   display.setCursor(2, 53);
   display.println("[5]Back");
@@ -475,8 +478,8 @@ void LCD_CONFIG_MODE2(uint8_t SELECTED, uint8_t ip_oct){
 
   display.setTextColor(WHITE);
   display.setTextSize(1);
-  display.setCursor(42, 0);
-  display.println("- IP SERVER -");
+  display.setCursor(35, 0);
+  display.println("- WIFI -");
   // for loop untuk menampilkan wifi yang ada
   Serial.print("SELECTED : ");
   Serial.println(SELECTED);
@@ -484,20 +487,7 @@ void LCD_CONFIG_MODE2(uint8_t SELECTED, uint8_t ip_oct){
   Serial.println(ip_oct);
   
   display.setCursor(10, 26);
-  display.print(get_ip(1));
-  display.setCursor(30, 26);
-  display.print('.');
-  display.setCursor(39, 26);
-  display.print(get_ip(2));
-  display.setCursor(59, 26);
-  display.print('.');
-  display.setCursor(68, 26);
-  display.print(get_ip(3));
-  display.setCursor(88, 26);
-  display.print('.');
-  display.setCursor(95, 26);
-  display.println(get_ip(4));
-  
+  display.print(credential[get_ip(1)]);
   display.setCursor(5, 53);
   display.println("[5] Back");
     
@@ -512,22 +502,7 @@ void LCD_CONFIG_MODE2(uint8_t SELECTED, uint8_t ip_oct){
     case 1: 
       display.setTextColor(BLACK, WHITE);
       display.setCursor(10, 26);
-      display.print(ip_oct);
-      break;
-    case 2: 
-      display.setTextColor(BLACK, WHITE);
-      display.setCursor(39, 26);
-      display.print(ip_oct);
-      break;
-    case 3: 
-      display.setTextColor(BLACK, WHITE);
-      display.setCursor(68, 26);
-      display.print(ip_oct);
-      break;
-    case 4: 
-      display.setTextColor(BLACK, WHITE);
-      display.setCursor(95, 26);
-      display.print(ip_oct);
+      display.print(credential[ip_oct]);
       break;
     
   }
