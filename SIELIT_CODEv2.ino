@@ -1,10 +1,26 @@
+// Setting Perangkat
+const char* namaPerangkat = "SIELIT_B";
+const char* Topic = "PegonBacaanP";
+const char* credential[14] = {"SAS", "123456789",                  
+                              "PPMBKI ASTRA 1", "bki12345678",
+                              "PPMBKI ASTRA 2", "calonmenantuidaman",
+                              "PPMBKI ASTRI 3", "",
+                              "PPMBKI ASTRA 3", "1sampai9",
+                              "PPMBKI ASTRI 1", "istrisolekha",
+                              "PPMBKI ASTRI 2", "istrisolekha"
+                            };
+int len = *(&credential + 1) - credential;
+
+
+//End Of Settingan Perangkat
+
 #define MENU_BUTTON 34
 
 TaskHandle_t taskkontrol;
 TaskHandle_t taskwifi;
 
 // MODE ditriggrer menggunakan interrupt
-bool MODE = true; // true : mode config, false : mode operation
+bool MODE = false; // true : mode config, false : mode operation
 bool LAST_MODE = MODE;
 bool isConnect = false;
 uint8_t KELAS = 2; // 0:PB 1:LB 2:CP 3:SR
@@ -13,12 +29,24 @@ uint8_t KELAS = 2; // 0:PB 1:LB 2:CP 3:SR
 unsigned long button_time = 0;  
 unsigned long last_button_time = 0;
 
+uint32_t start_mil = 0; 
+uint32_t start_req = 0; 
+
 SemaphoreHandle_t xMutex = NULL;
 
 QueueHandle_t queue;
 
 
 char* reply;
+
+void getTest(){
+  Serial.print("Heap : ");
+  Serial.println(ESP.getHeapSize());
+  Serial.print("FreeHeap : ");
+  Serial.println(ESP.getFreeHeap());
+  Serial.print("CPU cycle : ");
+  Serial.println(ESP.getCycleCount());
+}
 
 void IRAM_ATTR ISR_changeMenu(){
     button_time = millis();
@@ -34,7 +62,10 @@ void IRAM_ATTR ISR_changeMenu(){
 }
 
 void setup() {
+  start_mil = millis();
   Serial.begin(115200);
+  getTest();
+ 
 //  LCD_initt();
 //  LCD_wait();
 
@@ -59,8 +90,10 @@ void setup() {
     1, //priority of the task
     &taskwifi, //Task handle to keep track of created task
     0); //pin task to core 0
-  
+  Serial.print("FreeHeap : ");
+  Serial.println(ESP.getFreeHeap());
   delay(1000);
+  
 }
 
 //task_1code: blinks an LED every 1000 ms
@@ -75,7 +108,6 @@ void task_kontrol( void * pvParameters ){
   
   //Tambahan
   SPIFFS_init();
-  EEPROM_init();
   //LCD
   LCD_initt();
   LCD_wait();
@@ -140,12 +172,13 @@ void task_kontrol( void * pvParameters ){
             LCD_process(datas);
         }
       }
-      char token[40];
+      char token[45];
       if(xQueueReceive(queue, &messageTemp, xTicksToWait)== pdPASS){
         Serial.print("Pesan :");
         Serial.println(messageTemp);
         strcpy(token,messageTemp.c_str());
         LCD_reqmsg(token);
+        getTest();
       }
 //      // Belajar
 //      offbuffer = readPresence();
@@ -169,6 +202,7 @@ void task_wifi( void * pvParameters ){
   Serial.println(xPortGetCoreID() );
 
   //Tambahan
+  EEPROM_init();
   MQTT_init();
   
   for(;;){
