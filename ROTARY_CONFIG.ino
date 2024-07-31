@@ -111,7 +111,7 @@ uint8_t get_ip(uint8_t number){
   
 }
 
-uint8_t get_eeprom(uint8_t RCHOOSE){ // 0 : volume dan 1 : brightness , 3-6 : ip_octave
+uint8_t get_eeprom(uint8_t RCHOOSE){ // 0 : volume dan 1 : brightness , 2 : Wifi
  
   if(RCHOOSE==1){// jika brightness yang dipilih
 //    uint8_t brightness; // 0-100
@@ -143,54 +143,26 @@ uint8_t get_eeprom(uint8_t RCHOOSE){ // 0 : volume dan 1 : brightness , 3-6 : ip
     EEPROM.writeByte(VOLUME_ADDR, volume);
     EEPROM.commit();
     return volume; // jika DIRECTION_CCW
-  }else if(RCHOOSE==3){
+  }else if(RCHOOSE==2){
     ip_oct1 = EEPROM.readByte(IP_OCT1_ADDR);
     if(direction){
-      ip_oct1--;
+      if(ip_oct1<1){ 
+        ip_oct1 = len-2;
+      }else{
+        ip_oct1-=2;  
+      }
       EEPROM.writeByte(IP_OCT1_ADDR, ip_oct1);
       EEPROM.commit();
       return ip_oct1;
     }
-    ip_oct1++;
+    if(ip_oct1 >= len-2){
+      ip_oct1=0;
+    }else{
+      ip_oct1+=2;  
+    }
     EEPROM.writeByte(IP_OCT1_ADDR, ip_oct1);
     EEPROM.commit();
     return ip_oct1;
-  }else if(RCHOOSE==4){
-    ip_oct2 = EEPROM.readByte(IP_OCT2_ADDR);
-    if(direction){
-      ip_oct2--;
-      EEPROM.writeByte(IP_OCT2_ADDR, ip_oct2);
-      EEPROM.commit();
-      return ip_oct2;
-    }
-    ip_oct2++;
-    EEPROM.writeByte(IP_OCT2_ADDR, ip_oct2);
-    EEPROM.commit();
-    return ip_oct2;
-  }else if(RCHOOSE==5){
-    ip_oct3 = EEPROM.readByte(IP_OCT3_ADDR);
-    if(direction){
-      ip_oct3--;
-      EEPROM.writeByte(IP_OCT3_ADDR, ip_oct3);
-      EEPROM.commit();
-      return ip_oct3;
-    }
-    ip_oct3++;
-    EEPROM.writeByte(IP_OCT3_ADDR, ip_oct3);
-    EEPROM.commit();
-    return ip_oct3;
-  }else if(RCHOOSE==6){
-    ip_oct4 = EEPROM.readByte(IP_OCT4_ADDR);
-    if(direction){
-      ip_oct4--;
-      EEPROM.writeByte(IP_OCT4_ADDR, ip_oct4);
-      EEPROM.commit();
-      return ip_oct4;
-    }
-    ip_oct4++;
-    EEPROM.writeByte(IP_OCT4_ADDR, ip_oct4);
-    EEPROM.commit();
-    return ip_oct4;
   }
 
 }
